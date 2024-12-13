@@ -1,0 +1,26 @@
+[project]
+name = "webtouch"
+version = "0.1.0"
+description = "Test the availability of web services"
+authors = [
+    {name = "hamster88", email = "hamster88@users.noreply.github.com"},
+]
+dependencies = ["requests>=2.32.3"]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "GPL-3.0-only"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project.scripts]
+webtouch = "webtouch.cli:main"
+
+[tool.pdm.scripts]
+dev = "src/webtouch/cli.py"
+
+
+
+[tool.pdm]
+distribution = true
