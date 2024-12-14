@@ -20,10 +20,14 @@ def init(new_options):
     global opts,results,handles,errors,params
     opts = new_options
 
+    w = opts.watch
+    if w <= 0:
+        w = 1
+
     params = param_generator(opts.url, opts.interpolation)
-    results = deque(maxlen=opts.watch) 
+    results = deque(maxlen=w) 
     handles = deque(maxlen=opts.concurrent)
-    errors = deque(maxlen=opts.watch)
+    errors = deque(maxlen=w)
     
 
 
@@ -51,6 +55,7 @@ def main(url, note):
     with lock:
         cnt['alive'] -= 1
         cnt['done'] += 1
+        cnt['time'] += f.elapsed_time()
 
         if f in handles:
             handles.remove(f)
@@ -74,31 +79,33 @@ def monitor():
 
     text += "-------------- \n"
     text += f"Result({cnt['res']})  Error({cnt['error']})\n"
-    if cnt['error']:
-        for ef in errors:
-            text += (f"{ef.id}: {ef.report()}\n")
-    if cnt['res']:
-        for rf in results:
-            text += (f"{rf.id}: {rf.report()}\n")
-    else:
-        text += ("No results.\n")
+    if opts.watch > 0:
+        if cnt['error']:
+            for ef in errors:
+                text += (f"{ef.id}: {ef.report()}\n")
+        if cnt['res']:
+            for rf in results:
+                text += (f"{rf.id}: {rf.report()}\n")
+        else:
+            text += ("No results.\n")
 
-    text += "-- Running ---- \n"
-    if cnt['alive']:
-        with lock:
-            left, right, n_skip = my_slice(handles, opts.watch)
-        for  f in left:
-            text += (f"{f.id}: {f.see()}\n")
-        if n_skip:
-            text += f'     ...{n_skip}\n'
-        for  f in right:
-            text += (f"{f.id}: {f.see()}\n")
-    else:
-        text += ("No alive.\n")
+    if opts.watch > 0:
+        text += "-- Running ---- \n"
+        if cnt['alive']:
+            with lock:
+                left, right, n_skip = my_slice(handles, opts.watch)
+            for  f in left:
+                text += (f"{f.id}: {f.see()}\n")
+            if n_skip:
+                text += f'     ...{n_skip}\n'
+            for  f in right:
+                text += (f"{f.id}: {f.see()}\n")
+        else:
+            text += ("No alive.\n")
 
     t = int(time.time() - init_time)
     clock =  time.strftime("%H:%M:%S", time.gmtime(t))
-    text += f'{clock}  alive: {cnt["alive"]}  total: {cnt["total"]} \n' 
+    text += f'{clock}  alive: {cnt["alive"]}  total: {cnt["total"]} ({int(cnt["time"])}s) \n' 
     print(text)
 
         
