@@ -1,17 +1,19 @@
 import os
+import random
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import queue
 import time
-import task
+from webtouch import task
 
 # 锁对象，确保线程安全
 lock = task.lock
 
 
+
 def run_worker():
-    with ThreadPoolExecutor(max_workers=MAX_CONCURRENT) as executor:
+    with ThreadPoolExecutor(max_workers=task.opts.concurrent) as executor:
         # 提交任务到线程池
         while True:
             # 检查线程池是否有空闲线程
@@ -20,8 +22,9 @@ def run_worker():
                 executor.submit(run_task)
             
             
-            time.sleep(task.NEXT_DELAY)  # 延迟后提交下一个任务
-            
+            s = random.uniform(*sorted(task.opts.delay[-2:]))
+            time.sleep(s)  # 延迟后提交下一个任务
+
 
 
 # 执行任务的函数
@@ -32,7 +35,7 @@ def run_task():
         result = task.main(*args)
 
     except Exception as e:
-        print(f"Error occurred in task : {e}\nargs: {args}\n")
+        print(f"Abort task : {e}\nargs: {args}\n")
 
 # 监视线程的函数
 def run_monitor():
@@ -42,7 +45,10 @@ def run_monitor():
 
 
 
-def main():
+def main(new_options=None):
+    if new_options:
+        task.init(new_options)
+
     thread_worker = threading.Thread(target=run_worker,daemon=True)
     thread_worker.start()
     print('start thread_worker')
@@ -53,6 +59,7 @@ def main():
 
     while True:
         input()
+        task.clear_error()
 
 
 if __name__ == "__main__":

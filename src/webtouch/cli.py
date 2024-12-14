@@ -1,38 +1,44 @@
 import argparse
+import os
 
-import app
+from webtouch import app
+from webtouch import task
 
 def main():
-    app.main()
-    return 
-    # 创建 ArgumentParser 对象
-    parser = argparse.ArgumentParser(description="一个简单的CLI计算器")
-
-    # 添加参数
-    parser.add_argument("num1", type=float, help="第一个数字")
-    parser.add_argument("num2", type=float, help="第二个数字")
-    parser.add_argument("-a", "--add", action="store_true", help="执行加法操作")
-    parser.add_argument("-s", "--subtract", action="store_true", help="执行减法操作")
-    parser.add_argument("-m", "--multiply", action="store_true", help="执行乘法操作")
-    parser.add_argument("-d", "--divide", action="store_true", help="执行除法操作")
-
-    # 解析命令行参数
+    parser = argparse.ArgumentParser(prog='webtouch',description="App for processing tasks with options.")
+    
+    # 定义位置参数 url
+    parser.add_argument("url", nargs="?", default=task.opts.url, help="The URL to process (optional).")
+    
+    # 定义选项参数
+    parser.add_argument("-c", "--concurrent", type=int, default=task.opts.concurrent,
+                        help="最大并发数")
+    parser.add_argument("-d", "--delay", type=float, action="append", default=[],
+                        help="提交延迟 (default: 5). 此选项可使用2次，记录到数组")
+    parser.add_argument("-w", "--watch", type=int, default=task.opts.watch,
+                        help="监视的条目数 (default: 10)")
+    parser.add_argument("-i", "--interpolation", type=int, action="append", default=[],
+                        help="设置插值的模式. 此选项可使用多次，记录到数组")
+    
     args = parser.parse_args()
+    if len(args.delay) == 0:
+        args.delay = [5,5]
+    if len(args.delay) == 1:
+        args.delay *= 2
+    
+    app.main(args)
+    # 输出解析后的参数
+    # print("Parsed Arguments:")
+    # print(f"URL: {args.url}")
+    # print(f"Concurrent: {args.concurrent}")
+    # print(f"Delay: {args.delay}")
+    # print(f"Watch: {args.watch}")
+    # print(f"Interpolation: {args.interpolation}")
 
-    # 根据用户输入执行对应的操作
-    if args.add:
-        print(f"结果: {args.num1} + {args.num2} = {args.num1 + args.num2}")
-    elif args.subtract:
-        print(f"结果: {args.num1} - {args.num2} = {args.num1 - args.num2}")
-    elif args.multiply:
-        print(f"结果: {args.num1} * {args.num2} = {args.num1 * args.num2}")
-    elif args.divide:
-        if args.num2 != 0:
-            print(f"结果: {args.num1} / {args.num2} = {args.num1 / args.num2}")
-        else:
-            print("错误: 除数不能为0")
-    else:
-        print("错误: 请指定一个操作 (例如: -a, -s, -m, -d)")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('\n>> Interrupt <<  ')
+        os.abort()

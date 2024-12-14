@@ -81,13 +81,14 @@ class Fetch:
         if self.phase != 'end':  # 如果请求未结束，返回提示
             return 'Request is not completed yet.'
         
+        elapsed = self.elapsed_time()
+
         if self.error:  # 如果请求出错，返回错误信息
-            return f'Error occurred: {self.error}'
+            return f'FetchError: {int(elapsed)}s  {self.url}  {self.error}'
         
         status_code = self.res.status_code if self.res else '---'
-        elapsed = self.elapsed_time()
-        content_length = self.res.headers.get('Content-Length', 'N/A') if self.res else '---'
-        
+        content_length = self.res.headers.get('content-length', 'N/A') if self.res else '---'
+        content_length = str(self.res.headers)
         return f'{status_code}  Time: {elapsed:.2f}s  Length: {content_length}'
     
     
