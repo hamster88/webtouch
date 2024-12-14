@@ -1,5 +1,7 @@
+from random import randint
 import time
 import requests
+from webtouch import user_agents
 
 DEFAULT_HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -28,7 +30,7 @@ class Fetch:
     error: Exception
     headers = DEFAULT_HEADERS
 
-    def __init__(self, url, note=None):
+    def __init__(self, url, note=None, ua=None, new_headers=None):
         '''
         初始化 Fetch 类实例
         :param url: 请求的 URL
@@ -41,6 +43,17 @@ class Fetch:
         self.end_time = 0
         self.error = None
         self.res = None
+
+        #randomized X-Forwarded-For and X-Real-IP address
+        self.headers['X-Forwarded-For'] = randip()
+        self.headers['X-Real-IP'] = randip()
+
+
+        if ua:
+            self.headers['user-agent'] = ua
+        else:
+            self.headers['user-agent'] = randua()
+
 
 
     def run(self):
@@ -107,5 +120,16 @@ class Fetch:
         '''
         n = int(self.elapsed_time())
         return f'[{self.phase}]\t{n}\t{self.note} '
+
+def randip():
+    b = []
+    for i in range(4):
+        b.append(str(randint(1,255)))
+    return '.'.join(b)
+
+def randua():
+    uas = user_agents.db
+    i = randint(0,len(uas))
+    return uas[i]['userAgent']
     
     
