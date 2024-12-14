@@ -86,9 +86,8 @@ class Fetch:
         if self.error:  # 如果请求出错，返回错误信息
             return f'FetchError: {int(elapsed)}s  {self.url}  {self.error}'
         
-        status_code = self.res.status_code if self.res else '---'
-        content_length = self.res.headers.get('content-length', 'N/A') if self.res else '---'
-        content_length = str(self.res.headers)
+        status_code = self.res.status_code if self.res != None else '---'
+        content_length = self.res.headers.get('Content-Length', 'N/A') if self.res != None  else '---'
         return f'{status_code}  Time: {elapsed:.2f}s  Length: {content_length}'
     
     
