@@ -44,6 +44,7 @@ def main(url, note):
         handles.append(f)
         cnt['total'] += 1
         cnt['alive'] += 1
+        f.id = str(cnt['total'])
 
     f.run()
 
@@ -71,26 +72,27 @@ def main(url, note):
 def monitor():
     text = ''
 
-    text += "-- Monitoring -- \n"
+    text += "-------------- \n"
+    text += f"Result({cnt['res']})  Error({cnt['error']})\n"
     if cnt['error']:
-        for i, endf in enumerate(errors, 1):
-            text += (f"{i}: {endf.report()}\n")
+        for ef in errors:
+            text += (f"{ef.id}: {ef.report()}\n")
     if cnt['res']:
-        for i, endf in enumerate(results, 1):
-            text += (f"{i}: {endf.report()}\n")
+        for rf in results:
+            text += (f"{rf.id}: {rf.report()}\n")
     else:
         text += ("No results.\n")
 
-    text += "-- Running -- \n"
+    text += "-- Running ---- \n"
     if cnt['alive']:
         with lock:
             left, right, n_skip = my_slice(handles, opts.watch)
         for  f in left:
-            text += (f"{f.see()}\n")
+            text += (f"{f.id}: {f.see()}\n")
         if n_skip:
             text += f'     ...{n_skip}\n'
         for  f in right:
-            text += (f"{f.see()}\n")
+            text += (f"{f.id}: {f.see()}\n")
     else:
         text += ("No alive.\n")
 

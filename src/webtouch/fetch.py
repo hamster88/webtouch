@@ -29,6 +29,7 @@ class Fetch:
     end_time: float
     error: Exception
     headers = DEFAULT_HEADERS
+    id:str = 'noid'
 
     def __init__(self, url, note=None, ua=None, new_headers=None):
         '''
@@ -97,11 +98,11 @@ class Fetch:
         elapsed = self.elapsed_time()
 
         if self.error:  # 如果请求出错，返回错误信息
-            return f'FetchError: {int(elapsed)}s  {self.url}  {self.error}'
+            return f'Fail  {int(elapsed)}s  {self.url}  {self.error}'
         
-        status_code = self.res.status_code if self.res != None else '---'
-        content_length = self.res.headers.get('Content-Length', 'N/A') if self.res != None  else '---'
-        return f'{status_code}  Time: {elapsed:.2f}s  Length: {content_length}'
+        status  = self.res.status_code if self.res != None else '---'
+        length = self.res.headers.get('Content-Length', 'N/A') if self.res != None  else '?'
+        return f'{elapsed:.2f}s {status} len={length}'
     
     
     def see(self):
