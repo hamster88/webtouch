@@ -26,13 +26,6 @@ def main():
         args.delay *= 2
     
     app.main(args)
-    # 输出解析后的参数
-    # print("Parsed Arguments:")
-    # print(f"URL: {args.url}")
-    # print(f"Concurrent: {args.concurrent}")
-    # print(f"Delay: {args.delay}")
-    # print(f"Watch: {args.watch}")
-    # print(f"Interpolation: {args.interpolation}")
 
 
 if __name__ == "__main__":

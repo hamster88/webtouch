@@ -102,7 +102,7 @@ class Fetch:
         
         status  = self.res.status_code if self.res != None else '---'
         length = self.res.headers.get('Content-Length', 'N/A') if self.res != None  else '?'
-        return f'{elapsed:.2f}s {status} len={length}'
+        return f' {status}  {elapsed:.2f}s  len={length}'
     
     
     def see(self):
