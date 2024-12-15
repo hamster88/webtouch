@@ -1,47 +1,40 @@
 from collections import Counter, deque
-from itertools import count
 import time
 import threading
 from typing import Deque
 from webtouch import fetch
 
 
-class Options:
-    url:str = 'http://speedtest4.tele2.net/1GB.zip?q={}'
-    concurrent:int = 32
-    delay:list[float] = [5,5]
-    watch:int = 10
-    interpolation:list[int] = []
 
 
-opts:Options = Options()
+def init(watch_size=10, results_size=10, errors_size=10, handles_size=1024):
+    '''
+    初始化任务参数
+    '''
+    global results, handles, errors, n_watch
 
-def init(new_options):
-    global opts,results,handles,errors,params
-    opts = new_options
-
-    w = opts.watch
-    if w <= 0:
-        w = 1
-
-    params = param_generator(opts.url, opts.interpolation)
-    results = deque(maxlen=w) 
-    handles = deque(maxlen=opts.concurrent)
-    errors = deque(maxlen=w)
+    n_watch = watch_size
+    errors = deque(maxlen=errors_size)
+    results = deque(maxlen=results_size) 
+    handles = deque(maxlen=handles_size)
     
+# 记录完成请求的结果
+errors:Deque[fetch.Fetch] = deque(maxlen=5)
+results:Deque[fetch.Fetch] = deque(maxlen=5) 
 
+# 记录正在执行的请求
+handles:Deque[fetch.Fetch] = deque(maxlen=255)
+n_watch = 10 # 监视正在执行的请求
 
-
-# 配置参数
-MONITOR_INTERVAL = 1  # 监视线程刷新间隔（秒）
-
-results:Deque[fetch.Fetch] = deque(maxlen=opts.watch)  # 最近完成任务的结果（固定长度）
-handles:Deque[fetch.Fetch] = deque(maxlen=opts.concurrent)
-errors:Deque[fetch.Fetch] = deque(maxlen=opts.watch)
-cnt = Counter()
+cnt = Counter()  # 统计数据
 lock = threading.Lock()  # 锁保护共享数据
 
-def main(url, note):
+
+def main(url, note, max_download_bytes=1024**2):
+    '''
+    单个请求任务
+    '''
+
     f = fetch.Fetch(url, note)
 
     with lock:
@@ -79,7 +72,7 @@ def monitor():
 
     text += "-------------- \n"
     text += f"Result({cnt['res']})  Error({cnt['error']})\n"
-    if opts.watch > 0:
+    if n_watch > 0:
         if cnt['error']:
             for ef in errors:
                 text += (f"{ef.id}: {ef.report()}\n")
@@ -89,11 +82,11 @@ def monitor():
         else:
             text += ("No results.\n")
 
-    if opts.watch > 0:
+    if n_watch > 0:
         text += "-- Running ---- \n"
         if cnt['alive']:
             with lock:
-                left, right, n_skip = my_slice(handles, opts.watch)
+                left, right, n_skip = my_slice(handles, n_watch)
             for  f in left:
                 text += (f"{f.id}: {f.see()}\n")
             if n_skip:
@@ -110,15 +103,9 @@ def monitor():
 
         
 
-def param_generator(url_template:str, interpolation_modes=[]):
-    for i in count(1):  
-        # TODO: interpolations = next(iter_interpolations)
-        interpolations = (i,)
-        url = url_template.format(*interpolations)
-        note = '_'.join(['URL',*[str(x) for x in interpolations]])
-        yield (url, note)
 
-params = param_generator(opts.url)
+
+# params = param_generator('http://127.0.0.1/')
 
 
 def clear_error():
@@ -140,11 +127,6 @@ def my_slice(arr, n):
 
 init_time = time.time()
 
-if __name__ == "__main__":
 
-    while True:
-        main(*next(params))
-        monitor()
-        time.sleep(1)
 
 
