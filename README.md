@@ -1,5 +1,5 @@
 # webtouch
-Test the availability of web services
+Test the availability of web services.
 
 ## Install
 ```shell
@@ -9,10 +9,85 @@ pip install git+https://github.com/hamster88/webtouch --force-reinstall
 ## Usage
 
 ```shell
-webtouch URL  [-c CONCURRENT] [-d DELAY] [-w WATCH] [-i INTERPOLATION]
+webtouch URL [OPTIONS...]
 ```
 
 ### Options
+- `-H <str>` Add headers. (TODO)
 - `-c <int>` Maximum concurrency.
 - `-d <float>` Submission delay between each requested task, setting it twice indicates the delay range.
-- 
+- `-w <int>` Maximum count of watch (print request info)
+- `-i <str>` Interpolation's rule.
+- `--hated <str>` Be hated trait.(TODO)
+- `--retreat <str>` Do it after beging hated.(TODO)
+
+
+### Interpolation
+Insert dynamic data into the URL for each request.
+
+**Example**
+
+```shell
+webtouch 'http://example.com/query?id={}&name={}&time={}&key={}' \
+    -i 1: -i s5-10 -i ms -i h16
+```
+
+**Rules**
+
+```
+Insert number: 
+    X-Y   ramdom integer
+    X:Y   cycle increment  (TODO)
+
+    X-  => X-2147483647
+    Y   => 0-Y
+    X:  => X:2147483647
+    :Y  => 0:Y 
+
+Insert timestamp: 
+    ts   integer of seconds
+    tm   decimal of seconds.millisecond
+    ms   integer of millisecond
+
+Insert string: 
+    sX-Y  ramdom length words and numbers
+    wX-Y  ramdom length and words
+
+Insert other:
+    hN    random N bytes hex value
+    uuid  uuid4() 8-4-4-4-12 format string
+    A,B,C,...  random enumeration value
+
+```
+
+### Hated and retreat
+预测被讨厌并采取的措施
+
+**Example**
+
+```shell
+webtouch 'http://example.com/' \
+    --hated 429 \
+    --hated size:1024 \
+    --hated content:captcha \
+    --retreat 180s
+```
+
+**hated:** 
+检测什么情况是被讨厌了，条件均为or逻辑
+
+```
+N              响应状态码
+size:N         响应体字节数小于N
+content:TEXT   响应体文本解码后包含的内容
+header:TEXT    响应头格式化后包含的内容
+```
+
+
+**retreat:** 
+被讨厌后采取的措施
+
+```
+Ns    休眠 N 秒
+exit  退出程序
+```
