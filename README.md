@@ -18,7 +18,7 @@ webtouch URL [OPTIONS...]
 - `-d <float>` Submission delay between each requested task, setting it twice indicates the delay range.
 - `-w <int>` Maximum count of watch (print request info)
 - `-i <str>` Interpolation's rule.
-- `--cookies` (TODO URGENT)
+- `--cookies <str>`  load cookies.txt
 - `--hated <str>` Be hated trait.(TODO)
 - `--retreat <str>` Do it after beging hated.(TODO)
 

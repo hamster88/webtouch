@@ -111,3 +111,19 @@ def gen_time(fmt):
     
     while True:
         yield f(time.time())
+
+def gmkb(nbytes:int):
+    try:
+        n = int(nbytes)
+    except ValueError:
+        return nbytes
+    # 定义单位
+    units = ["b", "kb", "mb", "gb"]
+    i = 0     
+
+    # 转换单位
+    while n >= 1024 and i < len(units) - 1:
+        n /= 1024
+        i += 1
+    
+    return f'{n:.2f}{units[i]}'

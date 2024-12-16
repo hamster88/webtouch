@@ -2,6 +2,8 @@ from random import randint
 import time
 import requests
 from webtouch import user_agents
+from webtouch import util
+
 
 LOW_DEFAULT_HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -44,6 +46,7 @@ class Fetch:
     headers = DEFAULT_HEADERS
     cookie_jar = None
     id:str = 'noid'
+    _len:int = 0
 
     def __init__(self, url, note=None, cookie_jar=None, ua=None, new_headers=None):
         '''
@@ -78,7 +81,7 @@ class Fetch:
         '''
         self.start_time = time.time()  # 记录请求开始时间
         self.phase = 'active'  # 更新状态为 active
-
+ 
         try:
             self.res = requests.get(self.url,
                     cookies=self.cookie_jar,
@@ -119,8 +122,16 @@ class Fetch:
             return f'Fail  {int(elapsed)}s  {self.url}  {self.error}'
         
         status  = self.res.status_code if self.res != None else '---'
-        length = self.res.headers.get('Content-Length', 'N/A') if self.res != None  else '?'
-        return f' {status}  {elapsed:.2f}s  len={length}'
+        length = self.res.headers.get('Content-Length', 0) 
+        
+        if length == 0:
+            try:
+               length = len(self.res.content)
+            except TypeError:
+                pass
+            
+        self._len = int(length)
+        return f' {status}  {elapsed:.2f}s  {util.gmkb(length)}'
     
     
     def see(self):
@@ -131,14 +142,20 @@ class Fetch:
         
         elapsed = self.elapsed_time()
         n = int(elapsed)
-        len_cookie = self.cookie_jar and f'(cookies:{len(self.cookie_jar)})' or ''
-        return f'{n:>3}s {self.note}    ' + len_cookie
+        look_cookie = self.cookie_jar and f'(cookies:{len(self.cookie_jar)})' or ''
+        return f'{n:>3}s  {self.note}    ' + look_cookie
+
+
+    
     def __str__(self):
         '''
         格式化类的输出信息
         '''
         n = int(self.elapsed_time())
         return f'[{self.phase}]\t{n}\t{self.note} '
+    
+    def __len__(self):
+        return len(self._len)
 
 def randip():
     b = []
