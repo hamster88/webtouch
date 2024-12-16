@@ -7,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 import queue
 import time
 from pprint import pprint
+from http.cookiejar import MozillaCookieJar
+
 
 from webtouch import task
 from webtouch import util
@@ -22,11 +24,11 @@ class TypingOption:
     delay:list[float] = [5,5]
     watch:int = 10
     interpolation:list[str] = ['1-65536']
-
+    cookies:str = None
  
 option:TypingOption = TypingOption()
 
-#这代码没有问题吧
+
 def param_generator(url_template:str, rules:list[str]=[]):
     interpolation_iters = util.interpolation_generator(rules)
     for i in count(1):
@@ -86,6 +88,14 @@ def init(new_option=None):
     global option, param_iter
     if new_option:
         option = new_option
+
+    if option.cookies:
+        # 加载 cookies.txt 文件
+        cookie_jar = MozillaCookieJar(option.cookies)
+        cookie_jar.load(ignore_discard=True, ignore_expires=True)
+        
+        task.cookie_jar = cookie_jar
+        
 
     param_iter = param_generator(option.url, option.interpolation)
     task.init(option.watch, option.watch, option.watch, option.concurrent)

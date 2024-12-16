@@ -29,13 +29,15 @@ n_watch = 10 # 监视正在执行的请求
 cnt = Counter()  # 统计数据
 lock = threading.Lock()  # 锁保护共享数据
 
+cookie_jar=None
+max_download_bytes=1024**2
 
-def main(url, note, max_download_bytes=1024**2):
+def main(url, note):
     '''
     单个请求任务
     '''
 
-    f = fetch.Fetch(url, note)
+    f = fetch.Fetch(url, note, cookie_jar=cookie_jar)
 
     with lock:
         handles.append(f)
