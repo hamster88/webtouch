@@ -37,7 +37,7 @@ webtouch 'http://example.com/query?id={}&name={}&time={}&key={}' \
 ```
 Insert number: 
     X-Y   ramdom integer
-    X:Y   cycle increment  (TODO)
+    X:Y   cycle increment 
 
     X-  => X-2147483647
     Y   => 0-Y
@@ -49,11 +49,11 @@ Insert timestamp:
     tm   decimal of seconds.millisecond
     ms   integer of millisecond
 
-Insert string: 
+Insert string:  (TODO)
     sX-Y  ramdom length words and numbers
     wX-Y  ramdom length and words
 
-Insert other:
+Insert other:  (TODO)
     hN    random N bytes hex value
     uuid  uuid4() 8-4-4-4-12 format string
     A,B,C,...  random enumeration value
