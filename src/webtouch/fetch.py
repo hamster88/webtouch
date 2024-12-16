@@ -32,7 +32,7 @@ DEFAULT_HEADERS={
     "Upgrade-Insecure-Requests": "1",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.0) AppleWebKit/618.23.1 (KHTML, like Gecko) Version/17.3 Safari/618.23.1"
 }
-# 添加方法生成，请求结束时返回简略报告，状态码、耗时、content-length
+
 class Fetch:
     '''
     封装 requests.get 
@@ -72,6 +72,9 @@ class Fetch:
             self.headers['User-Agent'] = ua
         else:
             self.headers['User-Agent'] = randua()
+            
+        if new_headers:
+            self.headers.update(new_headers)
 
 
 

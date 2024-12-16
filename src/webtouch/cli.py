@@ -12,15 +12,17 @@ def main():
     
     # 定义选项参数
     parser.add_argument("-c", "--concurrent", metavar='<num>', type=int, default=app.option.concurrent,
-                        help="最大并发数(default: 32)")
+                        help="Maximum concurrency")
     parser.add_argument("-d", "--delay", metavar='<seconds>', type=float, action="append", default=[],
-                        help="提交延迟 (default: 5). 此选项可使用2次，记录到数组")
+                        help="Submission delay between each requested task, setting it twice indicates the delay range")
     parser.add_argument("-w", "--watch",metavar='<num>', type=int, default=app.option.watch,
-                        help="监视的条目数 (default: 10)")
+                        help="Maximum count of watch")
     parser.add_argument("-i", "--interpolation", metavar='<rule>', type=str, action="append", default=[],
                         help="Rule of dynamic URL generator")
+    parser.add_argument("-H", "--header", metavar='<name:value>', type=str, action="append", default=[],
+                        help="Set headers")
     parser.add_argument("--cookies", metavar='<file>', type=str,
-                        help="load cookies.txt")
+                        help="Load cookies.txt")
     
 
 
@@ -30,9 +32,23 @@ def main():
         args.delay = [5,5]
     if len(args.delay) == 1:
         args.delay *= 2
-    
+        
+    if args.header:
+        args.new_headers = parse_headers(args.header)
+    else:
+        args.new_headers = {}
+        
     app.main(args)
 
+def parse_headers(haders:list[str]) -> dict[str,str]:
+    d = {}
+    for h in haders:
+        k, v = h.split(':', 1)
+        d[k] = v
+        
+    return d
+        
+    
 
 if __name__ == "__main__":
     try:

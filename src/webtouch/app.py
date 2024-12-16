@@ -13,7 +13,6 @@ from http.cookiejar import MozillaCookieJar
 from webtouch import task
 from webtouch import util
 
-
 MONITOR_INTERVAL = 1 # 监视线程刷新间隔（秒）
 
 lock = threading.Lock()
@@ -25,6 +24,7 @@ class TypingOption:
     watch:int = 10
     interpolation:list[str] = ['1-65536']
     cookies:str = None
+    new_headers:str = {}
  
 option:TypingOption = TypingOption()
 
@@ -71,7 +71,7 @@ def run_task():
         with lock:
             args = next(param_iter)
 
-        result = task.main(*args)
+        result = task.main(*args, new_headers=option.new_headers)
 
     except Exception as e:
         print(f"Abort task : {e}\nargs: {args}\n")

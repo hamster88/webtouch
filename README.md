@@ -13,7 +13,7 @@ webtouch URL [OPTIONS...]
 ```
 
 ### Options
-- `-H <str>` Add headers. (TODO)
+- `-H <str>` Set headers. 
 - `-c <int>` Maximum concurrency.
 - `-d <float>` Submission delay between each requested task, setting it twice indicates the delay range.
 - `-w <int>` Maximum count of watch (print request info)

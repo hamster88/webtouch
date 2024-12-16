@@ -32,12 +32,12 @@ lock = threading.Lock()  # 锁保护共享数据
 cookie_jar=None
 max_download_bytes=1024**2
 
-def main(url, note):
+def main(url, note, new_headers={}):
     '''
     单个请求任务
     '''
 
-    f = fetch.Fetch(url, note, cookie_jar=cookie_jar)
+    f = fetch.Fetch(url, note, cookie_jar=cookie_jar, new_headers=new_headers)
 
     with lock:
         handles.append(f)
