@@ -26,11 +26,11 @@ webtouch URL [OPTIONS...]
 ### Interpolation
 Insert dynamic data into the URL for each request.
 
-**Example**
+**Example** 分别插入从1开始的递增数，5-10之间的随机数，毫秒精度的时间戳，随机8个字节的16进制数
 
 ```shell
 webtouch 'http://example.com/query?id={}&name={}&time={}&key={}' \
-    -i 1: -i s5-10 -i ms -i h16
+    -i 1: -i 5-10 -i ms -i h8
 ```
 
 **Rules**
@@ -62,10 +62,9 @@ Insert other:  (TODO)
 ```
 
 ### Hated and retreat
-预测被讨厌并采取的措施
+预测被讨厌并采取措施
 
-**Example**
-
+**Example:** 在收到429状态码、响应体小于1024字节或者内容包含`"captcha"`时, 休眠3分钟
 ```shell
 webtouch 'http://example.com/' \
     --hated 429 \
@@ -73,6 +72,9 @@ webtouch 'http://example.com/' \
     --hated content:captcha \
     --retreat 180s
 ```
+
+
+
 
 **hated:** 
 检测什么情况是被讨厌了，条件均为or逻辑
