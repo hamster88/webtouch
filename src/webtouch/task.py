@@ -4,6 +4,8 @@ import logging
 from random import uniform
 import time
 
+from webtouch import app
+
 logger = logging.getLogger('task')
 
 
@@ -37,17 +39,24 @@ class Task:
 
 class SleepTask(Task):
     delay = 1
-    
     def __init__(self):
         super().__init__()
-        self.delay = uniform(20, 50)
+        self.delay = uniform(2, 20)
         self.title = f'Sleep_{self.delay:.0f}'
         self.summary = f'Sleep {self.delay} seconds'
         
     def run(self):
+        if self.delay > 15:
+            raise ValueError('x > 15. (test unknown error)')
+        
         logger.info(f'start\t{self.id}\t{self.title}')
         time.sleep(self.delay)
         logger.info(f'done\t{self.id}\t{self.title}')
+        
+        if self.delay > 10:
+            self.error = 'x > 10 (test error)'
+        
+
         
 
 class FetchTask(Task):

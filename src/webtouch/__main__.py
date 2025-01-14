@@ -1,6 +1,6 @@
 from webtouch import app
 
-app.option['view'] = 'debug'
+app.option['view'] = 'overview'
 
 
 def main():
