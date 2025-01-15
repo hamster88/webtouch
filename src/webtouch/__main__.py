@@ -1,10 +1,10 @@
-from webtouch import app
+from webtouch import _app
 
-app.option['view'] = 'overview'
+_app.option['view'] = 'overview'
 
 
 def main():
-    app.main()
+    _app.main()
 
 
     

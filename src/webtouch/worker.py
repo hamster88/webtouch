@@ -1,91 +1,65 @@
-
-from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 import logging
 from random import uniform
 import threading
 import time
 
-from webtouch.task import Task
+from webtouch import Task, Reporter
 
 logger = logging.getLogger('worker')
-
-
 class Worker():
-    task_cls:type
-    concurrent:int
-    delay:float
-    delay2:float = 0
-    
-    executor:ThreadPoolExecutor
-    # tasks_running:deque[Task]
-    # tasks_history:deque[Task]
-    # emit:callable
-    
-    is_picking = False
-    _thr = None
-    def __init__(self, task_cls, concurrent=16, delay=0):
+    def __init__(self, task_cls:type[Task], reporter:Reporter, concurrent=0, min_delay=0, max_delay=0):
         self.task_cls = task_cls
-        self.concurrent = concurrent
-        # self.emit = emit or pass_emit
-
-        try:
-            self.delay = delay[0]
-            self.delay2 = delay[1]
-        except (TypeError, IndexError, KeyError, AttributeError):
-            self.delay = delay
-        
+        self.reporter = reporter
+        self.concurrent =  concurrent or task_cls.CONCURRENT
+        self.min_delay = min_delay or task_cls.MIN_DELAY
+        self.max_delay = max_delay or task_cls.MAX_DELAY
         
         
         self.is_picking = False
         self.executor = ThreadPoolExecutor(max_workers=self.concurrent)
-        # self.tasks_running = deque(maxlen=self.concurrent)
-        # self.tasks_history = deque(maxlen=max(self.concurrent, 32))
+        self._thr = threading.Thread(target=self.pickup, daemon=True)
 
-    
-    def do_task(self):
-
+    def run_task(self):
         t = self.task_cls()
-        
-        self.tasks_running.append(t)
-        # self.emit('worker:submit', (self, t))
-        t.start()
-        
-        self.tasks_running.remove(t)
-        self.tasks_history.append(t)
-        # self.emit('worker:done', (self, t))
-        
+        self.reporter.begin()
+        t.run()
+        self.reporter.end()
+
 
     def pickup(self):
-        
         while self.is_picking:
             if self.executor._work_queue.qsize() < 1:
                 self.executor.submit(self.do_task)
-
+                
             self.sleep()
     
     def start(self):
-        logger.info('start worker thread')
+        logger.info('start worker')
         if self.is_picking:
-            logger.debug('already exists worker thread')
-            return self._thr
-        logger.debug('create worker thread')
-        
+            logger.debug(f'start worker skiped ({self.is_picking=})')
+            return
+
         self.is_picking = True
-        self._thr = threading.Thread(target=self.pickup, daemon=True)
         self._thr.start()
+        logger.debug('start worker ok')
         
-        return self._thr
-    
     
     def stop(self):
-        self.is_picking = False
-        self.executor.shutdown(wait=False, cancel_futures=True)
-    
+        logger.info('stop worker')
+        if self.executor:
+            self.is_picking = False
+            self.executor.shutdown(wait=False, cancel_futures=True)
+            self.executor = None
+            logger.debug('stop worker ok')
+        else:
+            logger.debug(f'stop worker skiped ({self.executor=})')
+            
+
     def sleep(self):
-        s = self.delay
-        if self.delay2:
-            s =  uniform(self.delay, self.delay2)
+        s = self.min_delay
+        if self.min_delay < self.max_delay:
+            s =  uniform(self.min_delay, self.max_delay)
             
         time.sleep(s)
-        
+     

@@ -4,37 +4,61 @@ import logging
 from random import uniform
 import time
 
-from webtouch import app
+from webtouch import Reporter
 
 logger = logging.getLogger('task')
 
 
 class Task:
-    id:int = 0
-    tid:int = 0
-    title:str = ''
-    summary:str = ''
+    CONCURRENT = 16
+    MIN_DELAY = 1
+    MAX_DELAY = 0
     
-    _counters = Counter()
-
+    _counter = Counter()
     def __init__(self):
         cls = self.__class__
-        self.id = Task._counters[cls]
-        self.tid = Task._counters['tid']
-        Task._counters[cls] += 1
-        Task._counters['tid'] += 1
+        self.id = Task._counter[cls]
+        self.tid = Task._counter[Task]
+        
+        Task._counter[cls] += 1
+        Task._counter[Task] += 1
+        
+        self.title = f'{cls.__name__}:{self.tid}'
+        self.detail = 'The task is ready.'
+        
+        self.tags = {'ready'}
+        
+        
     
-    def run(self):
-        msg = 'function "run" must be implemented by Task subclasses.'
+    def main(self):
+        '''任务主要逻辑'''
+        msg = 'function "main" must be implemented by Task subclasses.'
         raise NotImplementedError(msg)
     
-    def start(self):
+    def free(self):
+        '''资源清理'''
+        pass
+    
+    def run(self):
+        '''安全运行任务单元'''
+        
         try:
-            self.run()
+            self.tags.add('running')
+            self.tags.remove('ready')
+            self.main()
         except Exception as e:
-            self.error = f'Abort in task: {self.summary}\n{e}'
-    
-    
+            self.detail = f'Abort in task: {self.title}\n  {self.detail}\n  {e}'
+            self.tags.add('abort')
+            self.tags.add('error')
+        finally:
+            self.tags.add('done')
+            self.tags.remove('running')
+            self.free()
+
+    @classmethod
+    def check(cls, reporter:Reporter):
+        '''周期性检查函数'''
+        pass
 
 
 class SleepTask(Task):
@@ -45,7 +69,7 @@ class SleepTask(Task):
         self.title = f'Sleep_{self.delay:.0f}'
         self.summary = f'Sleep {self.delay} seconds'
         
-    def run(self):
+    def main(self):
         if self.delay > 15:
             raise ValueError('x > 15. (test unknown error)')
         

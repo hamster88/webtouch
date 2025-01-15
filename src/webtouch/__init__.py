@@ -1,4 +1,7 @@
-from webtouch import task
+from webtouch.common import App
+from webtouch.worker import Worker
+from webtouch.reporter import Reporter
+from webtouch.task import *
 
-Task = task.Task
-FetchTask = task.FetchTask
+
+app = App()
