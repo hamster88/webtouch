@@ -12,22 +12,22 @@ logger = logging.getLogger('worker')
 
 
 class Worker():
-    task_class:type
+    task_cls:type
     concurrent:int
     delay:float
     delay2:float = 0
     
     executor:ThreadPoolExecutor
-    tasks_running:deque[Task]
-    tasks_history:deque[Task]
-    emit:callable
+    # tasks_running:deque[Task]
+    # tasks_history:deque[Task]
+    # emit:callable
     
     is_picking = False
     _thr = None
-    def __init__(self, TaskClass, concurrent=16, delay=0, emit=None):
-        self.task_class = TaskClass
+    def __init__(self, task_cls, concurrent=16, delay=0):
+        self.task_cls = task_cls
         self.concurrent = concurrent
-        self.emit = emit or pass_emit
+        # self.emit = emit or pass_emit
 
         try:
             self.delay = delay[0]
@@ -39,20 +39,21 @@ class Worker():
         
         self.is_picking = False
         self.executor = ThreadPoolExecutor(max_workers=self.concurrent)
-        self.tasks_running = deque(maxlen=self.concurrent)
-        self.tasks_history = deque(maxlen=max(self.concurrent, 32))
+        # self.tasks_running = deque(maxlen=self.concurrent)
+        # self.tasks_history = deque(maxlen=max(self.concurrent, 32))
 
     
     def do_task(self):
 
-        t = self.task_class()
+        t = self.task_cls()
+        
         self.tasks_running.append(t)
-        self.emit('worker:submit', (self, t))
+        # self.emit('worker:submit', (self, t))
         t.start()
         
         self.tasks_running.remove(t)
         self.tasks_history.append(t)
-        self.emit('worker:done', (self, t))
+        # self.emit('worker:done', (self, t))
         
 
     def pickup(self):
@@ -88,8 +89,3 @@ class Worker():
             
         time.sleep(s)
         
-  
-    
-def pass_emit(event, data):
-    pass
-
