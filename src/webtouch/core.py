@@ -11,7 +11,7 @@ import sys
 from webtouch.reporter import Reporter
 from webtouch.task import Task
 from webtouch.worker import Worker
-
+import webtouch.viewer as viewer_mod
 
 class LogHandler(logging.Handler):
     def __init__(self, on_log:callable):
@@ -25,29 +25,47 @@ class LogHandler(logging.Handler):
 
 class CoreOption():
     def __init__(self):
-        self.view = 'log'
+        self.view = 'curses'
+        
+
 
 class CoreApp():
     def __init__(self):
+        self._key = f'Core.{hex(id(self))[2:]}'
+        self.logger = logging.getLogger(self._key)
+        
         self.option = CoreOption()
         self.lock = threading.Lock()
-        self.putlog = print
+        self.viewer = self.get_viewer()
         self.savelog = None
         
-        self._init_logger()
+        self.init_logger()
     
-    def _init_logger(self):
+    def get_viewer(self):
+        v = self.option.view 
+        if v == 'log':
+            return viewer_mod.LogViewer()
+        
+        if v == 'curses':
+            return viewer_mod.CursesViewer()
+        
+        if v is None or v in ['silent', 'nothing', 'none', 'None','null']:
+            return viewer_mod.NothingViewer()
+        
+    
+    def init_logger(self):
+        log_level = logging.DEBUG
+        
+        #长格式用于保存， 短格式用于显示
         log_format = '%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] \t %(message)s'
         log_format_short = '%(asctime)s [%(levelname)s] \t %(message)s'
         
-        log_level = logging.DEBUG
         log_datefmt = "%Y-%m-%d %H:%M:%S"
         log_datefmt_short = "%H:%M:%S"   
-         
+        
         
         # 创建日志记录器
-        self._name = f'Core.{hex(id(self))[2:]}'
-        self.logger = logging.getLogger(self._name)
+
         self.logger.setLevel(log_level)
 
         # 创建格式化器
@@ -58,14 +76,15 @@ class CoreApp():
         log_handler = LogHandler(self.handle_log)
         log_handler.setFormatter(self._log_formatter)
         self.logger.addHandler(log_handler)
-         
+        
+        
     # 定义日志处理函数
     def handle_log(self, record: logging.LogRecord):
         
         text = self._log_formatter_short.format(record)
         text = text.replace('\n','\n  ')
         with self.lock:
-            print(f"{text}")
+            self.viewer.putlog(text)
     
 
     def main(self, task_cls:type[Task]): 
@@ -80,22 +99,25 @@ class CoreApp():
         
         self.worker.start()
         
-        self.viewer()
-    
-    def viewer(self):
+        self.viewer.show()
+
+        os._exit(0)
         
-        mode = self.option.view
-        self.logger.info(f'start viewer ({mode=})')
         
-        if mode == 'adv':
-            pass
+    # def viewer(self):
         
-        if mode in ['log', 'debug']:
-            try:
-                while True:
-                    input()
-            except KeyboardInterrupt:
-                pass
-            finally:
-                os._exit(0)
+    #     mode = self.option.view
+    #     self.logger.info(f'start viewer ({mode=})')
+        
+    #     if mode == 'curses':
+    #         pass
+        
+    #     if mode == 'log':
+    #         try:
+    #             while True:
+    #                 input()
+    #         except KeyboardInterrupt:
+    #             pass
+    #         finally:
+    #             os._exit(0)
                 
