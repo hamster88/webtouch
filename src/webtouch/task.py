@@ -21,7 +21,7 @@ class Task:
         Task._counter[Task] += 1
         
         self.title = f'{cls.__name__}:{self.tid}'
-        self.detail = 'The task is ready.'
+        self.detail = 'The subclass did not set detail (default detail).'
         
         self.tags = {'ready'}
         
@@ -47,6 +47,8 @@ class Task:
             self.detail = f'Abort in task: {self.title}\n  {self.detail}\n  {e}'
             self.tags.add('abort')
             self.tags.add('error')
+            self.logger.error(self.detail)
+            
         finally:
             self.tags.add('done')
             self.tags.remove('running')

@@ -1,7 +1,7 @@
 from webtouch import app, SleepTask
 
 def main():
-    app.option['view'] = 'log'
+    app.option.view = 'log'
     app.main(SleepTask)
 
     

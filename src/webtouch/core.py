@@ -23,11 +23,17 @@ class LogHandler(logging.Handler):
 
             self.on_log(record)
 
-
-class Core():
+class CoreOption():
     def __init__(self):
-        self.option = defaultdict(lambda:'')
+        self.view = 'log'
+
+class CoreApp():
+    def __init__(self):
+        self.option = CoreOption()
         self.lock = threading.Lock()
+        self.putlog = print
+        self.savelog = None
+        
         self._init_logger()
     
     def _init_logger(self):
@@ -57,10 +63,10 @@ class Core():
     def handle_log(self, record: logging.LogRecord):
         
         text = self._log_formatter_short.format(record)
-        # 示例:将日志内容打印到控制台(可以自定义存储或处理逻辑)
+        text = text.replace('\n','\n  ')
         with self.lock:
             print(f"{text}")
-        
+    
 
     def main(self, task_cls:type[Task]): 
         self.task_cls = task_cls
@@ -78,7 +84,7 @@ class Core():
     
     def viewer(self):
         
-        mode = self.option['view']
+        mode = self.option.view
         self.logger.info(f'start viewer ({mode=})')
         
         if mode == 'adv':
