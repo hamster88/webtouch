@@ -6,7 +6,6 @@ import logging
 from random import uniform
 import time
 
-
 class Task:
     CONCURRENT = 16
     MIN_DELAY = 1
@@ -28,8 +27,6 @@ class Task:
         
         self.logger = logging.getLogger('task')
 
-        
-    
     def main(self):
         '''任务主要逻辑'''
         msg = 'function "main" must be implemented by Task subclasses.'
@@ -60,7 +57,6 @@ class Task:
         '''周期性检查函数'''
         pass
 
-
 class SleepTask(Task):
     delay = 1
     def __init__(self):
@@ -80,9 +76,6 @@ class SleepTask(Task):
         
         if self.delay > 10:
             self.error = 'x > 10 (test error)'
-        
-
-        
 
 class FetchTask(Task):
     url:str

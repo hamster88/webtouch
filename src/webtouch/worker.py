@@ -7,8 +7,6 @@ import time
 from webtouch.task import Task
 from webtouch.reporter import Reporter
 
-
-
 class Worker():
     def __init__(self, task_cls:type[Task], reporter:Reporter, concurrent=0, min_delay=0, max_delay=0):
         self.task_cls = task_cls
@@ -38,8 +36,6 @@ class Worker():
             if n < 1:
                 self.executor.submit(self.run_task)
                 
-            
-            
             self.sleep()
     
     def start(self):
