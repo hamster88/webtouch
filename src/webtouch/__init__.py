@@ -1,7 +1,7 @@
-from webtouch.core import App
 from webtouch.worker import Worker
 from webtouch.reporter import Reporter
-from webtouch.task import *
+from webtouch.task import Task, SleepTask, FetchTask
 
+from webtouch.core import Core
 
-app = App()
+app = Core()

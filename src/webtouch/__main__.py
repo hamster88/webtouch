@@ -1,11 +1,8 @@
-from webtouch import _app
-
-_app.option['view'] = 'overview'
-
+from webtouch import app, SleepTask
 
 def main():
-    _app.main()
-
+    app.option['view'] = 'log'
+    app.main(SleepTask)
 
     
     

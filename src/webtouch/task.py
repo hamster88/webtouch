@@ -1,12 +1,10 @@
+from __future__ import annotations
+
 from collections import Counter
 from itertools import count
 import logging
 from random import uniform
 import time
-
-from webtouch import Reporter
-
-logger = logging.getLogger('task')
 
 
 class Task:
@@ -28,6 +26,8 @@ class Task:
         
         self.tags = {'ready'}
         
+        self.logger = logging.getLogger('task')
+
         
     
     def main(self):
@@ -56,7 +56,7 @@ class Task:
             self.free()
 
     @classmethod
-    def check(cls, reporter:Reporter):
+    def check(cls, reporter):
         '''周期性检查函数'''
         pass
 
@@ -70,12 +70,13 @@ class SleepTask(Task):
         self.summary = f'Sleep {self.delay} seconds'
         
     def main(self):
+
         if self.delay > 15:
             raise ValueError('x > 15. (test unknown error)')
         
-        logger.info(f'start\t{self.id}\t{self.title}')
+        self.logger.info(f'start\t{self.id}\t{self.title}')
         time.sleep(self.delay)
-        logger.info(f'done\t{self.id}\t{self.title}')
+        self.logger.info(f'done\t{self.id}\t{self.title}')
         
         if self.delay > 10:
             self.error = 'x > 10 (test error)'

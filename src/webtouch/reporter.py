@@ -5,7 +5,7 @@ from random import uniform
 import threading
 import time
 
-from webtouch import Task
+from webtouch.task import Task
 
 class Reporter():
     def __init__(self, maxlen=32):
@@ -15,7 +15,7 @@ class Reporter():
         self.invalid:deque[Task] = deque(maxlen=maxlen)
         
         self.counter = Counter()
-        self.state = defaultdict('')
+        self.state = defaultdict(lambda:'')
         
     def begin(self, t:Task):
         self.running.append(t)
