@@ -63,8 +63,8 @@ class CursesViewer(BaseViewer):
         self.logs.append(message)
         
         if self.stdscr:
-            max_line = 10
-            max_width = 50
+            max_line = self.my
+            max_width = self.mx
             part_log = deque(maxlen=max_line)
             for i in range(len(self.logs) - 1, -1, -1):
                 log = self.logs[i]
@@ -92,11 +92,16 @@ class CursesViewer(BaseViewer):
                 # for s in parag[1:]:
                 #     text_buff += f'  |  {s}\n'
             
-            self.stdscr.clear()
-            self.stdscr.addstr(0, 0, text_buff)
-            self.stdscr.refresh()
+            try:
+                self.stdscr.clear()
+                self.stdscr.addstr(0, 0, text_buff)
+                self.stdscr.refresh()
+            except:
+                pass
             
-  
+            # _debug  = f'{self.mx} {self.mx} '
+            # self.stdscr.addstr(20, 0, _debug)
+        
 
     def main(self, stdscr):
         # 初始化 stdscr
@@ -153,22 +158,18 @@ class CursesViewer(BaseViewer):
 
     def loop(self):
         self.stdscr.timeout(100)  # 设置超时时间为 100 毫秒
-        try:
-            while True:
+       
+        while True:
+            try:
                 ch = self.stdscr.getch()
                 self.check_resize()
                 if ch == curses.ERR:  # 没有按键事件
-                    continue
-                elif ch == ord('q'):  # 如果按下 'q' 键,退出
-                    break
+                    pass
                 else:
-                    self._putlog(f"You pressed: {chr(ch)}")
-        except KeyboardInterrupt:
-            pass
-        finally:
-            # self.stdscr.addstr(1, 0, "Exiting...")
-            # self.stdscr.refresh()
-            return 
+                    self._putlog(f"You pressed: {chr(ch)} ({ch})")
+            except KeyboardInterrupt:
+                return
+     
         
         
         
