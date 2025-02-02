@@ -1,5 +1,8 @@
 from collections import deque
+
 import os
+from pprint import pprint
+import textwrap  
 
 
 try:
@@ -45,7 +48,7 @@ class LogViewer(BaseViewer):
     def show(self):
        self.loop()
 
-# 这代码疑似内存溢出    
+
 class CursesViewer(BaseViewer):
     def __init__(self):
         self.putlog = self._putlog
@@ -61,10 +64,9 @@ class CursesViewer(BaseViewer):
         
         if self.stdscr:
             max_line = 10
-            _a = 0
+            max_width = 50
             part_log = deque(maxlen=max_line)
             for i in range(len(self.logs) - 1, -1, -1):
-                _a += 1
                 log = self.logs[i]
                 # TODO: filter(log)
                 part_log.appendleft(log)
@@ -75,22 +77,26 @@ class CursesViewer(BaseViewer):
             
             lines = []
             for i in part_log:
-                p = self.typeset(i)
+                p = self.wrap(i, max_width)
                 lines.append((True, p[0]))
                 for s in p[1:]:
                     lines.append((False, s))
             
-            # for flag, text in lines[max(0, len(lines)-max_line):]:
-            #     text = '* | '+ text
-                
-            #     self.stdscr.addstr(0, 0, text)
-            #     self.stdscr.refresh()
             
-            #这段没有被执行
-            _debug = f'{len(self.logs)} {len(part_log)} {part_log.maxlen} {_a=}'
-            self.stdscr.addstr(20, 0, _debug)
-            self.stdscr.addstr(21, 0, message)
             
+            text_buff = ''
+            for flag, line in lines[max(0, len(lines)-max_line):]:
+                prefix = flag and '* | ' or '  | '
+                # prefix = flag and '* ' or ' '
+                text_buff += f'{prefix}{line}\n'
+                # for s in parag[1:]:
+                #     text_buff += f'  |  {s}\n'
+            
+            self.stdscr.clear()
+            self.stdscr.addstr(0, 0, text_buff)
+            self.stdscr.refresh()
+            
+  
 
     def main(self, stdscr):
         # 初始化 stdscr
@@ -104,25 +110,28 @@ class CursesViewer(BaseViewer):
         # 进入事件循环
         self.loop()
     
-    
-    
-    def typeset(self, text, width=0) -> list[list]:
-        width = width or self.mx
-        
-        lines = text.split('\n')  
-        p = []
+    def wrap(self, text:str, width):
+        lines = text.splitlines()
+        res = []
         for l in lines:
-            wrapped = self.wrap_line(l, width)
-            p.append(wrapped)
-        return p
+            res += textwrap.wrap(
+                l, 
+                width,                        # 每行最大宽度
+                initial_indent='',            # 第一行的缩进
+                subsequent_indent='',         # 后续行的缩进
+                expand_tabs=True,             # 替换制表符为空格
+                replace_whitespace=True,      # 替换空白字符为普通空格
+                fix_sentence_endings=False,   # 修复句末空格
+                break_long_words=True,        # 是否允许单词中断行
+                drop_whitespace=False,        # 移除行尾多余空格
+                break_on_hyphens=True,        # 连字符处是否可断行
+                tabsize=4,                    # 制表符宽度
+                max_lines=None,               # 限制最大行数
+                placeholder=' [...]'          # 截断时使用的占位符
+            )
+            
+        return res
     
-    def wrap_line(self, line, max_width):
-        wrapped_lines = []
-        while len(line) > max_width:
-            wrapped_lines.append(line[:max_width])
-            line = line[max_width:]
-        wrapped_lines.append(line)
-        return wrapped_lines
 
     def on_resize(self):
         pass
