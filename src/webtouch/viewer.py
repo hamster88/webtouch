@@ -1,3 +1,4 @@
+from collections import deque
 import os
 
 
@@ -11,9 +12,6 @@ except ImportError as e:
   
     If it is not solved, please report this problem.
     '''.strip()
-    
-print(_not_import_curses)
-
 
 class BaseViewer():
     def __init__(self):
@@ -47,45 +45,109 @@ class LogViewer(BaseViewer):
     def show(self):
        self.loop()
 
-# 实现多行日志滚动显示
-# * | log1 line1 loooooooooooooooooooooooo
-#   | ooooooooooog texts
-#   | log1 line2
-# * | log2 line1 ...
+# 这代码疑似内存溢出    
 class CursesViewer(BaseViewer):
     def __init__(self):
-        self.stdscr:curses.window = None
         self.putlog = self._putlog
+        self.logs = deque(maxlen=100)
         
+        self.stdscr:curses.window = None
+        self.my = 0
+        self.mx = 0
+
 
     def _putlog(self, message):
-        text = '* | '+ message
-        # 示例:在窗口中打印日志
+        self.logs.append(message)
         
         if self.stdscr:
-            self.stdscr.addstr(0, 0, message)
-            self.stdscr.refresh()
+            max_line = 10
+            _a = 0
+            part_log = deque(maxlen=max_line)
+            for i in range(len(self.logs) - 1, -1, -1):
+                _a += 1
+                log = self.logs[i]
+                # TODO: filter(log)
+                part_log.appendleft(log)
+                
+                if len(part_log) == part_log.maxlen:
+                    break
+                
+            
+            lines = []
+            for i in part_log:
+                p = self.typeset(i)
+                lines.append((True, p[0]))
+                for s in p[1:]:
+                    lines.append((False, s))
+            
+            # for flag, text in lines[max(0, len(lines)-max_line):]:
+            #     text = '* | '+ text
+                
+            #     self.stdscr.addstr(0, 0, text)
+            #     self.stdscr.refresh()
+            
+            #这段没有被执行
+            _debug = f'{len(self.logs)} {len(part_log)} {part_log.maxlen} {_a=}'
+            self.stdscr.addstr(20, 0, _debug)
+            self.stdscr.addstr(21, 0, message)
+            
 
     def main(self, stdscr):
         # 初始化 stdscr
         self.stdscr = stdscr
         self.stdscr.clear()
+        curses.curs_set(0)
         
         # 示例:显示一条消息
         self._putlog("Press any key to continue or 'q' to quit.")
 
         # 进入事件循环
         self.loop()
+    
+    
+    
+    def typeset(self, text, width=0) -> list[list]:
+        width = width or self.mx
+        
+        lines = text.split('\n')  
+        p = []
+        for l in lines:
+            wrapped = self.wrap_line(l, width)
+            p.append(wrapped)
+        return p
+    
+    def wrap_line(self, line, max_width):
+        wrapped_lines = []
+        while len(line) > max_width:
+            wrapped_lines.append(line[:max_width])
+            line = line[max_width:]
+        wrapped_lines.append(line)
+        return wrapped_lines
 
+    def on_resize(self):
+        pass
+
+    def check_resize(self):
+        my, mx =  self.stdscr.getmaxyx()
+        if self.mx != mx or self.my != my:
+            self.my = my
+            self.mx = mx
+            self.on_resize()
+            
+    
     def show(self):
+        # print('\x1b[?25l \r', end='', flush=True)
         # 使用 curses.wrapper 自动管理终端状态
         curses.wrapper(self.main)
+        # print('\x1b[?25h \r', end='', flush=True)
+        
 
     def loop(self):
         self.stdscr.timeout(100)  # 设置超时时间为 100 毫秒
         try:
             while True:
                 ch = self.stdscr.getch()
+                self.check_resize()
                 if ch == curses.ERR:  # 没有按键事件
                     continue
                 elif ch == ord('q'):  # 如果按下 'q' 键,退出
@@ -101,74 +163,3 @@ class CursesViewer(BaseViewer):
         
         
         
-
-class ________CursesViewer:
-    def __init__(self):
-        self.stdscr: curses.window = None
-        self.putlog = self._putlog
-        self.log_lines = []  # 存储所有日志行
-        self.max_lines = 0  # 窗口最大行数
-
-    def _putlog(self, message):
-        # 将传入的日志分割成多行后存储
-        wrapped_lines = self._wrap_text('* | ' + message)
-        self.log_lines.extend(wrapped_lines)
-
-        # 如果日志行数超过屏幕高度,移除顶部多余的行(滚动效果)
-        while len(self.log_lines) > self.max_lines:
-            self.log_lines.pop(0)
-
-        # 清屏并重新绘制所有日志
-        self.stdscr.clear()
-        for idx, line in enumerate(self.log_lines):
-            self.stdscr.addstr(idx, 0, line)
-        self.stdscr.refresh()
-
-    def _wrap_text(self, text):
-        """
-        将长文本按窗口宽度自动换行。
-        """
-        max_width = self.stdscr.getmaxyx()[1] - 1  # 获取窗口宽度
-        wrapped_lines = []
-        while len(text) > max_width:
-            wrapped_lines.append(text[:max_width])
-            text = text[max_width:]
-        wrapped_lines.append(text)
-        return wrapped_lines
-
-    def main(self, stdscr):
-        # 初始化 stdscr
-        self.stdscr = stdscr
-        self.stdscr.clear()
-                # 取消光标显示
-        curses.curs_set(False)
-        # curs_set
-        # 设置窗口的最大可用行数
-        self.max_lines = self.stdscr.getmaxyx()[0] - 1
-
-        # 显示初始消息
-        self._putlog("Press any key to log a message or 'q' to quit.")
-
-        # 进入事件循环
-        self.loop()
-
-    def show(self):
-
-        # 使用 curses.wrapper 自动管理终端状态
-        curses.wrapper(self.main)
-
-    def loop(self):
-        self.stdscr.timeout(100)  # 设置超时时间为 100 毫秒
-        try:
-            while True:
-                ch = self.stdscr.getch()
-                if ch == curses.ERR:  # 没有按键事件
-                    continue
-                elif ch == ord('q'):  # 如果按下 'q' 键,退出
-                    break
-                else:
-                    self._putlog(f"You pressed: {chr(ch)}")
-        except KeyboardInterrupt:
-            pass
-        finally:
-            return

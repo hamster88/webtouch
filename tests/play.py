@@ -1,3 +1,12 @@
+print('\x1b[?25l \r', end='', flush=True)
+import time
+# import sys
+# sys.stdout.flush()
+time.sleep(2)
+print('hello')
+time.sleep(2)
+print('\x1b[?25h', end='')
+exit()
 
 try:
     import curses
