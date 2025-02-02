@@ -63,8 +63,11 @@ class CursesViewer(BaseViewer):
         self.logs.append(message)
         
         if self.stdscr:
+            initial_prefix    = '* | '
+            subsequent_prefix = '  | '
             max_line = self.my
-            max_width = self.mx
+            max_width = self.mx - len(initial_prefix) -1
+            
             part_log = deque(maxlen=max_line)
             for i in range(len(self.logs) - 1, -1, -1):
                 log = self.logs[i]
@@ -86,11 +89,9 @@ class CursesViewer(BaseViewer):
             
             text_buff = ''
             for flag, line in lines[max(0, len(lines)-max_line):]:
-                prefix = flag and '* | ' or '  | '
-                # prefix = flag and '* ' or ' '
+                prefix = flag and initial_prefix or subsequent_prefix
                 text_buff += f'{prefix}{line}\n'
-                # for s in parag[1:]:
-                #     text_buff += f'  |  {s}\n'
+
             
             try:
                 self.stdscr.clear()
@@ -99,8 +100,9 @@ class CursesViewer(BaseViewer):
             except:
                 pass
             
-            # _debug  = f'{self.mx} {self.mx} '
-            # self.stdscr.addstr(20, 0, _debug)
+            # maxyx = self.stdscr.getmaxyx()
+            # _debug  = f'{self.my=} {self.mx=} {maxyx=}          '
+            # self.stdscr.addstr(0, 0, _debug)
         
 
     def main(self, stdscr):
@@ -108,6 +110,9 @@ class CursesViewer(BaseViewer):
         self.stdscr = stdscr
         self.stdscr.clear()
         curses.curs_set(0)
+        self.my, self.mx =  self.stdscr.getmaxyx()
+        
+        
         
         # 示例:显示一条消息
         self._putlog("Press any key to continue or 'q' to quit.")
