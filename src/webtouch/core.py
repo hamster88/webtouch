@@ -47,7 +47,7 @@ class CoreApp():
             return viewer_mod.LogViewer()
         
         if v == 'curses':
-            return viewer_mod.CursesViewer()
+            return viewer_mod.SheetView()
         
         if v is None or v in ['silent', 'nothing', 'none', 'None','null']:
             return viewer_mod.NothingViewer()
