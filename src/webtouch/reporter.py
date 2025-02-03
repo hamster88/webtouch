@@ -33,7 +33,7 @@ class Reporter():
         
         
         if 'invalid' in t.tags:
-            self.errors.append(t)
+            self.invalid.append(t)
             self.counter['invalid'] += 1
         else:
             self.history.append(t) 

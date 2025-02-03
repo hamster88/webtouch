@@ -47,10 +47,11 @@ class Task:
             self.detail = f'Abort in task: {self.title}\n  {self.detail}\n  {e}'
             self.tags.add('abort')
             self.tags.add('error')
+            self.tags.add('invalid')
             self.logger.error(self.detail)
             
         finally:
-            self.tags.add('done')
+            self.tags.add('end')
             self.tags.remove('running')
             self.free()
 
@@ -77,7 +78,10 @@ class SleepTask(Task):
         self.logger.info(f'done\t{self.id}\t{self.title}')
         
         if self.delay > 10:
-            self.error = 'x > 10 (test error)'
+            self.detail = 'x > 10 (test warn)'
+            self.title += '    [warn]' 
+            self.tags.add('warn')
+            
 
 class FetchTask(Task):
     url:str

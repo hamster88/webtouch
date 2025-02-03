@@ -19,6 +19,7 @@ except ImportError as e:
 class BaseViewer():
     def __init__(self):
         self.putlog:callable = lambda s:None
+        self.errlog:callable = lambda s:None
         self.reporter:Reporter = None
 
     def show(self):
@@ -64,31 +65,93 @@ class CursesViewer(BaseViewer):
         self.front = 'main'
         # self.front = 'log'
         
+        self.run_win:curses.window = None
+        self.his_win:curses.window = None
+        
 
 
-    def view_main(self):
+    def view_run(self):
         maxyx = self.stdscr.getmaxyx()
         _debug  = f'view_main\n{self.my=} {self.mx=} {maxyx=}          '
         
+        img = 'running: '
+        for i in self.reporter.running:
+            img += f'\n{i.tid}\t{i.title}'
+        
+        img = img.expandtabs(4)
+        
         try:
-            self.stdscr.clear()
-            self.stdscr.addstr(0, 0, _debug)
-            self.stdscr.refresh()
+            self.run_win.clear()
+            # self.run_win.addstr(0, 0, _debug)
+            self.run_win.addstr(0, 0, img)
+            self.run_win.refresh()
         except:
             pass
+    
+    def view_his(self):
+        h , _ = self.his_win.getmaxyx()
+        
+        maxyx = self.stdscr.getmaxyx()
+        _debug  = f'{self.my=}\t{self.mx=}\t{h=}'
+        
+        
+        img = f'history: \t{_debug}'
+        for i in list(self.reporter.history)[-9:]:
+            img += f'\n{i.tid}\t{i.title}'
+        
+        img = img.expandtabs(4)
+        
+        try:
+            self.his_win.clear()
+            self.his_win.addstr(0, 0, img)
+            self.his_win.refresh()
+        except:
+            pass
+    
+    def view_debug(self):
+        for i in range(self.my):
+            try:
+                self.stdscr.addstr(i,0,str(i))
+            except:
+                pass
+            
+        for i in range(self.mx):
+            try:
+                self.stdscr.addstr(13,i,str(i%10))
+            except:
+                pass
+            
         
     def handle_begin(self):
         if self.stdscr and self.front == 'main':
-            self.view_main()
-
+            self.view_run()
+    
+    def handle_end(self):
+        if self.stdscr and self.front == 'main':
+            self.view_his()
+    
+    def make_layout(self):
+        vh = self.my
+        vw = self.mx
+        
+        
+        bh = 4
+        hh = (vh - bh) // 2
+        rh = vh - hh - bh
+        
+        
+        
+        self.run_win = curses.newwin(rh, vw, 0, 0)
+        self.his_win = curses.newwin(hh, vw, rh, 0)
+        
     
     def _putlog(self, message):
         self.logs.append(message)
         
         if self.stdscr and self.front == 'log':
-            self.view_log()
+            self.view_logcat()
     
-    def view_log(self):
+    def view_logcat(self):
         initial_prefix    = '* | '
         subsequent_prefix = '  | '
         max_line = self.my
@@ -135,10 +198,12 @@ class CursesViewer(BaseViewer):
         self.stdscr = stdscr
         self.stdscr.clear()
         curses.curs_set(0)
-        self.my, self.mx =  self.stdscr.getmaxyx()
+        # self.my, self.mx =  self.stdscr.getmaxyx()
+        self.check_resize()
         
         # 绑定数据模型事件
         self.reporter.on_begin = self.handle_begin
+        self.reporter.on_end = self.handle_end
         # self.reporter.on_end
         
         # 示例:显示一条消息
@@ -171,7 +236,7 @@ class CursesViewer(BaseViewer):
     
 
     def on_resize(self):
-        pass
+        self.make_layout()
 
     def check_resize(self):
         my, mx =  self.stdscr.getmaxyx()
