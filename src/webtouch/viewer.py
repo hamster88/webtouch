@@ -71,6 +71,8 @@ class CursesViewer(BaseViewer):
 
 
     def view_run(self):
+        h , w = self.run_win.getmaxyx()
+        
         maxyx = self.stdscr.getmaxyx()
         _debug  = f'view_main\n{self.my=} {self.mx=} {maxyx=}          '
         
@@ -80,8 +82,16 @@ class CursesViewer(BaseViewer):
         
         img = img.expandtabs(4)
         
+        lines = []
+        for l in img.splitlines():
+            pl = f'{l:<{w-1}}'
+            lines.append(pl)
+            
+        img = '\n'.join(lines)
+        
+        
         try:
-            self.run_win.clear()
+            # self.run_win.clear()
             # self.run_win.addstr(0, 0, _debug)
             self.run_win.addstr(0, 0, img)
             self.run_win.refresh()
@@ -89,10 +99,10 @@ class CursesViewer(BaseViewer):
             pass
     
     def view_his(self):
-        h , _ = self.his_win.getmaxyx()
-        
+        h , w = self.his_win.getmaxyx()
+        # os.get_terminal_size()
         maxyx = self.stdscr.getmaxyx()
-        _debug  = f'{self.my=}\t{self.mx=}\t{h=}'
+        _debug  = f'{self.my=}\t{self.mx=}\t{h=} {w=}'
         
         
         img = f'history: \t{_debug}'
@@ -101,8 +111,16 @@ class CursesViewer(BaseViewer):
         
         img = img.expandtabs(4)
         
+        lines = []
+        for l in img.splitlines():
+            pl = f'{l:<{w-1}}'
+            lines.append(pl)
+            
+        img = '\n'.join(lines)
+        
+        
         try:
-            self.his_win.clear()
+            # self.his_win.clear()
             self.his_win.addstr(0, 0, img)
             self.his_win.refresh()
         except:
