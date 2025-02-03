@@ -106,7 +106,7 @@ class CursesViewer(BaseViewer):
         
         
         img = f'history: \t{_debug}'
-        for i in list(self.reporter.history)[-9:]:
+        for i in list(self.reporter.history)[-h+1:]:
             img += f'\n{i.tid}\t{i.title}'
         
         img = img.expandtabs(4)
