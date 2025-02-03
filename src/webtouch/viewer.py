@@ -1,8 +1,8 @@
 from collections import deque
-
 import os
 from pprint import pprint
 import textwrap  
+from webtouch.reporter import Reporter
 
 
 try:
@@ -18,7 +18,8 @@ except ImportError as e:
 
 class BaseViewer():
     def __init__(self):
-        self.putlog = lambda s:None
+        self.putlog:callable = lambda s:None
+        self.reporter:Reporter = None
 
     def show(self):
         print(f'{__class__.__name__}.show() is not implemented.')
@@ -51,6 +52,8 @@ class LogViewer(BaseViewer):
 
 class CursesViewer(BaseViewer):
     def __init__(self):
+        super().__init__()
+        
         self.putlog = self._putlog
         self.logs = deque(maxlen=100)
         
@@ -58,52 +61,74 @@ class CursesViewer(BaseViewer):
         self.my = 0
         self.mx = 0
 
+        self.front = 'main'
+        # self.front = 'log'
+        
 
+
+    def view_main(self):
+        maxyx = self.stdscr.getmaxyx()
+        _debug  = f'view_main\n{self.my=} {self.mx=} {maxyx=}          '
+        
+        try:
+            self.stdscr.clear()
+            self.stdscr.addstr(0, 0, _debug)
+            self.stdscr.refresh()
+        except:
+            pass
+        
+    def handle_begin(self):
+        if self.stdscr and self.front == 'main':
+            self.view_main()
+
+    
     def _putlog(self, message):
         self.logs.append(message)
         
-        if self.stdscr:
-            initial_prefix    = '* | '
-            subsequent_prefix = '  | '
-            max_line = self.my
-            max_width = self.mx - len(initial_prefix) -1
-            
-            part_log = deque(maxlen=max_line)
-            for i in range(len(self.logs) - 1, -1, -1):
-                log = self.logs[i]
-                # TODO: filter(log)
-                part_log.appendleft(log)
-                
-                if len(part_log) == part_log.maxlen:
-                    break
-                
-            
-            lines = []
-            for i in part_log:
-                p = self.wrap(i, max_width)
-                lines.append((True, p[0]))
-                for s in p[1:]:
-                    lines.append((False, s))
-            
-            
-            
-            text_buff = ''
-            for flag, line in lines[max(0, len(lines)-max_line):]:
-                prefix = flag and initial_prefix or subsequent_prefix
-                text_buff += f'{prefix}{line}\n'
-
-            
-            try:
-                self.stdscr.clear()
-                self.stdscr.addstr(0, 0, text_buff)
-                self.stdscr.refresh()
-            except:
-                pass
-            
-            # maxyx = self.stdscr.getmaxyx()
-            # _debug  = f'{self.my=} {self.mx=} {maxyx=}          '
-            # self.stdscr.addstr(0, 0, _debug)
+        if self.stdscr and self.front == 'log':
+            self.view_log()
+    
+    def view_log(self):
+        initial_prefix    = '* | '
+        subsequent_prefix = '  | '
+        max_line = self.my
+        max_width = self.mx - len(initial_prefix) -1
         
+        part_log = deque(maxlen=max_line)
+        for i in range(len(self.logs) - 1, -1, -1):
+            log = self.logs[i]
+            # TODO: filter(log)
+            part_log.appendleft(log)
+            
+            if len(part_log) == part_log.maxlen:
+                break
+            
+        
+        lines = []
+        for i in part_log:
+            p = self.wrap(i, max_width)
+            lines.append((True, p[0]))
+            for s in p[1:]:
+                lines.append((False, s))
+        
+        
+        
+        text_buff = ''
+        for flag, line in lines[max(0, len(lines)-max_line):]:
+            prefix = flag and initial_prefix or subsequent_prefix
+            text_buff += f'{prefix}{line}\n'
+
+        
+        try:
+            self.stdscr.clear()
+            self.stdscr.addstr(0, 0, text_buff)
+            self.stdscr.refresh()
+        except:
+            pass
+        
+        # maxyx = self.stdscr.getmaxyx()
+        # _debug  = f'{self.my=} {self.mx=} {maxyx=}          '
+        # self.stdscr.addstr(0, 0, _debug)
 
     def main(self, stdscr):
         # 初始化 stdscr
@@ -112,7 +137,9 @@ class CursesViewer(BaseViewer):
         curses.curs_set(0)
         self.my, self.mx =  self.stdscr.getmaxyx()
         
-        
+        # 绑定数据模型事件
+        self.reporter.on_begin = self.handle_begin
+        # self.reporter.on_end
         
         # 示例:显示一条消息
         self._putlog("Press any key to continue or 'q' to quit.")

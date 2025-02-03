@@ -15,13 +15,17 @@ class Reporter():
         self.invalid:deque[Task] = deque(maxlen=maxlen)
         
         self.counter = Counter()
+        self.sheet = Counter()
         self.state = defaultdict(lambda:'')
+        
+        self.on_begin = lambda: None
+        self.on_end = lambda: None
         
     def begin(self, t:Task):
         self.running.append(t)
         self.counter['running'] += 1
         self.counter['total'] += 1
-        
+        self.on_begin()
       
     def end(self, t:Task):
         self.running.remove(t)
@@ -35,5 +39,7 @@ class Reporter():
             self.history.append(t) 
             self.counter['history'] += 1
             
-        self.counter['done'] += 1
+        self.counter['end'] += 1
+        
+        self.on_end()
         

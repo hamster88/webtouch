@@ -99,6 +99,8 @@ class CoreApp():
         
         self.worker.start()
         
+        
+        self.viewer.reporter = self.reporter
         self.viewer.show()
 
         os._exit(0)
