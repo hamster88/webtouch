@@ -40,11 +40,22 @@ class LogViewer(BaseViewer):
     def show(self):
        self.loop()
 
-class SheetView(BaseViewer):
+class SheetViewer(BaseViewer):
     def __init__(self):
         super().__init__()
         
     def show(self):
         return super().show()
+    
+
+class RichViewer(BaseViewer):
+    def __init__(self):
+        from webtouch.textual_main import MyTextualApp
+        self.tapp = MyTextualApp()
+        super().__init__()
+    
+    def show(self):
+        self.tapp.run()
+        
     
     

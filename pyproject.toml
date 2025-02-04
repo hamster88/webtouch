@@ -5,8 +5,8 @@ description = "Test the availability of web application program"
 authors = [
     {name = "hamster88", email = "hamster88@users.noreply.github.com"},
 ]
-dependencies = ["requests>=2.32.3", "windows-curses>=2.4.1; sys_platform == 'win32'"]
-requires-python = ">=3.8"
+dependencies = ["textual>=1.0.0", "requests>=2.32.3"]
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "GPL-3.0-only"}
 

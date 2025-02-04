@@ -1,0 +1,99 @@
+/* eslint-disable */
+/* stylelint-disable */
+
+/* 
+$primary	原色，可以认为是品牌颜色。通常用于标题和背景以强调重点。
+$secondary	一种替代品牌颜色，用于与 类似的目的，其中应用程序需要将某些内容与主要颜色区分开来。$primary
+$foreground	默认文本颜色，在 、 和 上应清晰可辨。$background$surface$panel
+$background	用于背景的颜色，其中没有内容。用作屏幕的默认背景色。
+$surface	小组件的默认背景色，通常位于 .$background
+$panel	    用于区分 UI 的一部分与主内容的颜色。在 Textual 本身中谨慎使用。
+$boost	    一种带有 Alpha 的颜色，可用于在背景上创建图层。
+$warning	表示警告。通常用作背景色。 可用于前景。$text-warning
+$error	    指示错误。通常用作背景色。 可用于前景。$text-error
+$success	用于表示成功。通常用作背景色。 可用于前景。$text-success
+$accent    	谨慎使用以引起注意。通常与 和 形成对比。$primary$secondary
+*/
+
+
+Screen {
+    layout: vertical;
+    scrollbar-size: 0 0;
+    /* grid-size: 1 3; */
+    background:  $background;
+    color: $foreground;
+}
+
+.main-view {
+    align: right top;
+    layers: main float ;
+    
+}
+
+
+.content-view{
+    layer: main;
+    border: solid $error;
+    
+
+}
+
+.float-view{
+    layer: float;
+    
+    width: auto;
+    height: auto;
+}
+
+.float-view * {
+    width: auto;
+    height: auto;
+}
+
+
+#overview > Clock {
+    text-align: right;
+    width: 100%;
+    /* margin-bottom: 1; */
+    color: $primary;
+ }
+ 
+
+#overview > .details {
+   /* border-left: thick $boost; */
+   /* border-right: solid $secondary; */
+   background: $boost;
+
+}
+
+
+.box {      
+    padding: 1;
+    border: solid $primary;
+}
+
+
+.details {
+    border-top: solid $primary;
+    layout: grid;
+    grid-rows: auto;
+    grid-columns: auto;
+    grid-size: 2;
+    grid-gutter: 0 2;
+    height: auto;
+    min-height: 10;
+}
+
+.details.no-title {
+    border-top: none;
+    min-height: 3;
+}
+
+
+.details-item-label {
+
+}
+
+.details-item-value {
+    color: $secondary;
+}

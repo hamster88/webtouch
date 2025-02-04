@@ -25,7 +25,7 @@ class LogHandler(logging.Handler):
 
 class CoreOption():
     def __init__(self):
-        self.view = 'curses'
+        self.view = 'rich'
         
 
 
@@ -46,8 +46,8 @@ class CoreApp():
         if v == 'log':
             return viewer_mod.LogViewer()
         
-        if v == 'curses':
-            return viewer_mod.SheetView()
+        if v == 'rich':
+            return viewer_mod.RichViewer()
         
         if v is None or v in ['silent', 'nothing', 'none', 'None','null']:
             return viewer_mod.NothingViewer()
